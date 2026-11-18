@@ -1,7 +1,7 @@
 import { Image, View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { PressableFeedback } from 'heroui-native';
-import { ChevronRight, MapPin, Sunset } from 'lucide-react-native';
+import { ChevronRight, Clock, MapPin, Sunset } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayKey, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
@@ -60,22 +60,33 @@ export default function Week() {
               return (
                 <View
                   key={index}
-                  className={index > 0 ? 'mt-1 gap-2 border-t pt-3' : 'gap-2'}
+                  className={index > 0 ? 'mt-2 gap-3 border-t pt-4' : 'gap-3 pt-2'}
                   style={{ borderColor: c.line }}
                 >
-                  {runs.length > 1 && <Text style={s.date}>{run.name}</Text>}
-                  <Copy>{routeZone(run).replaceAll('_', ' ')}</Copy>
-                  <View style={s.times}>
-                    <View style={s.cell}>
-                      <Copy>Sunset</Copy>
-                      <Text style={s.time}>{time(forecast.sunset, run)}</Text>
-                    </View>
-                    <View style={s.cell}>
-                      <Copy>Leave home by</Copy>
-                      <Text style={s.time}>{time(forecast.leave, run)}</Text>
-                    </View>
+                  <View className="gap-1">
+                    <Text style={s.routeTitle}>{run.name}</Text>
+                    <Copy style={{ fontSize: 11 }}>{routeZone(run).replaceAll('_', ' ')}</Copy>
                   </View>
                   <Badge verdict={forecast.verdict} />
+                  <View
+                    className="flex-row gap-3 rounded-xl p-3"
+                    style={{ backgroundColor: c.paper }}
+                  >
+                    <View className="flex-1 gap-1">
+                      <View className="flex-row items-center gap-1.5">
+                        <Clock size={14} color={c.orange} />
+                        <Copy style={{ flexShrink: 1 }}>Leave by</Copy>
+                      </View>
+                      <Text style={[s.time, { color: c.orange }]}>{time(forecast.leave, run)}</Text>
+                    </View>
+                    <View className="flex-1 gap-1 border-l pl-3" style={{ borderColor: c.line }}>
+                      <View className="flex-row items-center gap-1.5">
+                        <Sunset size={14} color={c.muted} />
+                        <Copy style={{ flexShrink: 1 }}>Sunset</Copy>
+                      </View>
+                      <Text style={s.time}>{time(forecast.sunset, run)}</Text>
+                    </View>
+                  </View>
                   {passed && <Copy style={{ color: c.orange }}>Today’s sunset has passed.</Copy>}
                 </View>
               );
@@ -120,8 +131,7 @@ const s = StyleSheet.create({
   today: { backgroundColor: c.peach, borderColor: '#e7b69f' },
   rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   date: { fontSize: 14, fontFamily: 'Inter_700Bold', color: c.ink },
-  times: { flexDirection: 'row', gap: 10 },
-  cell: { flex: 1 },
+  routeTitle: { fontSize: 17, fontFamily: 'Inter_700Bold', color: c.ink },
   time: {
     fontSize: 25,
     fontFamily: 'Inter_700Bold',
