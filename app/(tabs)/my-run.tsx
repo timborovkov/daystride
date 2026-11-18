@@ -7,7 +7,7 @@ import MapView from '@/components/MapView';
 import type { LatLng, MapViewHandle } from '@/components/MapView.types';
 import { Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
-import { palette as c, sample, type Profile } from '@/lib/sunset';
+import { palette as c, sample, type Profile, type SunsetTiming } from '@/lib/sunset';
 
 const fields = [
   ['name', 'Run name'],
@@ -62,6 +62,7 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
     run: String(initial?.run ?? 40),
     travel: String(initial?.travel ?? 10),
   });
+  const [sunsetTiming, setSunsetTiming] = useState<SunsetTiming>(initial?.sunsetTiming ?? 'middle');
   const [pin, setPin] = useState<LatLng | undefined>(initial);
   const pinVersion = useRef(0);
   const locationRequest = useRef(0);
@@ -126,7 +127,10 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
     }
     setPending(true);
     try {
-      await save({ name, latitude: pin.latitude, longitude: pin.longitude, run, travel }, index);
+      await save(
+        { name, latitude: pin.latitude, longitude: pin.longitude, run, travel, sunsetTiming },
+        index,
+      );
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       close();
     } catch {
@@ -155,6 +159,32 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
               />
             </TextField>
           ))}
+          <View className="gap-2">
+            <Copy>Sunset during the run</Copy>
+            <View
+              className="flex-row gap-2"
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Sunset during the run"
+            >
+              {(['start', 'middle', 'end'] as const).map((timing) => (
+                <Button
+                  key={timing}
+                  className="flex-1 px-2"
+                  variant={timing === sunsetTiming ? 'primary' : 'secondary'}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: timing === sunsetTiming, disabled: pending }}
+                  isDisabled={pending}
+                  onPress={() => {
+                    if (timing === sunsetTiming) return;
+                    setSunsetTiming(timing);
+                    void Haptics.selectionAsync();
+                  }}
+                >
+                  {timing === 'start' ? 'Start' : timing === 'middle' ? 'Middle' : 'End'}
+                </Button>
+              ))}
+            </View>
+          </View>
           <Copy>Run location · Tap the map to place a pin.</Copy>
           <View className="h-64 overflow-hidden rounded-2xl">
             <MapView

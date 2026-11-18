@@ -8,7 +8,8 @@ export const sample = {
   run: 40,
   travel: 10,
 };
-export type Profile = typeof sample;
+export type SunsetTiming = 'start' | 'middle' | 'end';
+export type Profile = typeof sample & { sunsetTiming?: SunsetTiming };
 export const routeZone = (profile: Profile) => lookup(profile.latitude, profile.longitude);
 const clocks = new Map<string, Intl.DateTimeFormat>();
 const calendar = new Intl.DateTimeFormat('en-GB', {
@@ -57,7 +58,10 @@ export function calculate(date: number, p: Profile) {
   const sunset = sun.sunset?.getTime() ?? NaN,
     golden = sun.goldenHour?.getTime() ?? NaN,
     last = sun.dusk?.getTime() ?? NaN;
-  const start = sunset - p.run * 30000,
+  const duration = p.run * 60000;
+  const offset =
+    p.sunsetTiming === 'start' ? 0 : p.sunsetTiming === 'end' ? duration : duration / 2;
+  const start = sunset - offset,
     leave = start - p.travel * 60000,
     finish = start + p.run * 60000;
   const minutes = (last - finish) / 60000;
