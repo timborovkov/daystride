@@ -1,0 +1,130 @@
+diff --git a/node_modules/heroui-native/lib/module/components/switch/switch.animation.js b/node_modules/heroui-native/lib/module/components/switch/switch.animation.js
+index 39b5aa8..e5808a1 100644
+--- a/node_modules/heroui-native/lib/module/components/switch/switch.animation.js
++++ b/node_modules/heroui-native/lib/module/components/switch/switch.animation.js
+@@ -1,5 +1,6 @@
+ "use strict";
+ 
++import { Platform } from 'react-native';
+ import { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+ import { useThemeColor } from "../../helpers/external/hooks/index.js";
+ import { useAnimationSettings } from "../../helpers/internal/contexts/index.js";
+@@ -12,6 +13,11 @@ const [SwitchAnimationProvider, useSwitchAnimation] = createContext({
+ });
+ export { SwitchAnimationProvider, useSwitchAnimation };
+ 
++// Reanimated web writes animated styles to el.style unmapped, and `start`/`end`
++// aren't CSS properties, so the thumb never moved on web.
++const THUMB_START = Platform.OS === 'web' ? 'left' : 'start';
++const THUMB_END = Platform.OS === 'web' ? 'right' : 'end';
++
+ // --------------------------------------------------
+ 
+ /**
+@@ -157,24 +163,24 @@ export function useSwitchThumbAnimation(options) {
+     if (!isMounted) {
+       if (isSelected) {
+         return {
+-          end: offsetValue,
++          [THUMB_END]: offsetValue,
+           backgroundColor: backgroundColorValue[1]
+         };
+       }
+       return {
+-        start: offsetValue,
++        [THUMB_START]: offsetValue,
+         backgroundColor: backgroundColorValue[0]
+       };
+     }
+     const targetStart = isSelected ? contentContainerWidth.get() - computedWidth - offsetValue : offsetValue;
+     if (isAnimationDisabledValue) {
+       return {
+-        start: targetStart,
++        [THUMB_START]: targetStart,
+         backgroundColor: isSelected ? backgroundColorValue[1] : backgroundColorValue[0]
+       };
+     }
+     return {
+-      start: withSpring(targetStart, offsetSpringConfig),
++      [THUMB_START]: withSpring(targetStart, offsetSpringConfig),
+       backgroundColor: withTiming(isSelected ? backgroundColorValue[1] : backgroundColorValue[0], backgroundColorTimingConfig)
+     };
+   });
+diff --git a/node_modules/heroui-native/lib/module/helpers/internal/hooks/use-popup-dialog-content-animation.js b/node_modules/heroui-native/lib/module/helpers/internal/hooks/use-popup-dialog-content-animation.js
+index 65bf1d7..67dcf5d 100644
+--- a/node_modules/heroui-native/lib/module/helpers/internal/hooks/use-popup-dialog-content-animation.js
++++ b/node_modules/heroui-native/lib/module/helpers/internal/hooks/use-popup-dialog-content-animation.js
+@@ -3,7 +3,7 @@
+ import { useEffect, useMemo } from 'react';
+-import { Keyboard, useWindowDimensions } from 'react-native';
++import { Keyboard, Platform, useWindowDimensions } from 'react-native';
+ import { Gesture } from 'react-native-gesture-handler';
+-import { Easing, Extrapolation, interpolate, Keyframe, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from 'react-native-reanimated';
++import { Easing, Extrapolation, FadeIn, FadeOut, interpolate, Keyframe, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring } from 'react-native-reanimated';
+ import { scheduleOnRN } from 'react-native-worklets';
+ import { useAnimationSettings } from "../contexts/animation-settings-context.js";
+ import { getAnimationState, getIsAnimationDisabledValue } from "../utils/animation.js";
+@@ -11,7 +11,10 @@ import { getAnimationState, getIsAnimationDisabledValue } from "../utils/animati
+  * Default entering animation for dialog content
+  * Dialog content animates with scale and opacity transitions
+  */
+-const DEFAULT_ENTERING_ANIMATION = new Keyframe({
++// Web Keyframe cleanup repositions portal content; built-in fades preserve its layout.
++const DEFAULT_ENTERING_ANIMATION = Platform.OS === 'web'
++  ? FadeIn.duration(200).easing(Easing.bezier(0.23, 1, 0.32, 1))
++  : new Keyframe({
+   0: {
+     transform: [{
+       scale: 0.96
+@@ -31,7 +34,9 @@ const DEFAULT_ENTERING_ANIMATION = new Keyframe({
+  * Default exiting animation for dialog content
+  * Mirrors the entering animation - content exits with fade out and scale down
+  */
+-const DEFAULT_EXITING_ANIMATION = new Keyframe({
++const DEFAULT_EXITING_ANIMATION = Platform.OS === 'web'
++  ? FadeOut.duration(150).easing(Easing.bezier(0.23, 1, 0.32, 1))
++  : new Keyframe({
+   0: {
+     transform: [{
+       scale: 1
+diff --git a/node_modules/heroui-native/src/helpers/internal/hooks/use-popup-dialog-content-animation.ts b/node_modules/heroui-native/src/helpers/internal/hooks/use-popup-dialog-content-animation.ts
+index 8fcb738..6108b21 100644
+--- a/node_modules/heroui-native/src/helpers/internal/hooks/use-popup-dialog-content-animation.ts
++++ b/node_modules/heroui-native/src/helpers/internal/hooks/use-popup-dialog-content-animation.ts
+@@ -1,10 +1,12 @@
+ import { useEffect, useMemo } from 'react';
+-import { Keyboard, useWindowDimensions } from 'react-native';
++import { Keyboard, Platform, useWindowDimensions } from 'react-native';
+ import { Gesture } from 'react-native-gesture-handler';
+ import type { SharedValue } from 'react-native-reanimated';
+ import {
+   Easing,
+   Extrapolation,
++  FadeIn,
++  FadeOut,
+   interpolate,
+   Keyframe,
+   useAnimatedStyle,
+@@ -57,7 +59,10 @@ export interface UsePopupDialogContentAnimationProps {
+  * Default entering animation for dialog content
+  * Dialog content animates with scale and opacity transitions
+  */
+-const DEFAULT_ENTERING_ANIMATION: EntryOrExitLayoutType = new Keyframe({
++// Web Keyframe cleanup repositions portal content; built-in fades preserve its layout.
++const DEFAULT_ENTERING_ANIMATION: EntryOrExitLayoutType = Platform.OS === 'web'
++  ? FadeIn.duration(200).easing(Easing.bezier(0.23, 1, 0.32, 1))
++  : new Keyframe({
+   0: {
+     transform: [{ scale: 0.96 }],
+     opacity: 0,
+@@ -73,7 +78,9 @@ const DEFAULT_ENTERING_ANIMATION: EntryOrExitLayoutType = new Keyframe({
+  * Default exiting animation for dialog content
+  * Mirrors the entering animation - content exits with fade out and scale down
+  */
+-const DEFAULT_EXITING_ANIMATION: EntryOrExitLayoutType = new Keyframe({
++const DEFAULT_EXITING_ANIMATION: EntryOrExitLayoutType = Platform.OS === 'web'
++  ? FadeOut.duration(150).easing(Easing.bezier(0.23, 1, 0.32, 1))
++  : new Keyframe({
+   0: {
+     transform: [{ scale: 1 }],
+     opacity: 1,
