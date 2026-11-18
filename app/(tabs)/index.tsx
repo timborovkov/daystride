@@ -24,7 +24,7 @@ export default function Week() {
           <View style={s.location}>
             <MapPin size={14} color="#ffdfc8" />
             <Copy style={{ color: '#ffdfc8', flexShrink: 1 }}>
-              {runs.length > 1 ? `${runs.length} runs · ${profile.name} preview` : profile.name}
+              {runs.length > 1 ? `${runs.length} runs` : profile.name}
               {isSample ? ' · Sample profile' : ''}
             </Copy>
           </View>
@@ -36,8 +36,6 @@ export default function Week() {
       </View>
       {Array.from({ length: 7 }, (_, i) => {
         const date = today + i * 86400000;
-        const forecast = calculate(date, profile);
-        const passed = i === 0 && now >= forecast.sunset;
         return (
           <PressableFeedback
             key={date}
@@ -57,18 +55,31 @@ export default function Week() {
               </Text>
               <ChevronRight size={16} color={c.muted} />
             </View>
-            <View style={s.times}>
-              <View style={s.cell}>
-                <Copy>Sunset</Copy>
-                <Text style={s.time}>{time(forecast.sunset)}</Text>
-              </View>
-              <View style={s.cell}>
-                <Copy>Leave home by</Copy>
-                <Text style={s.time}>{time(forecast.leave)}</Text>
-              </View>
-            </View>
-            <Badge verdict={forecast.verdict} />
-            {passed && <Copy style={{ color: c.orange }}>Today’s sunset has passed.</Copy>}
+            {runs.map((run, index) => {
+              const forecast = calculate(date, run);
+              const passed = i === 0 && now >= forecast.sunset;
+              return (
+                <View
+                  key={index}
+                  className={index > 0 ? 'mt-1 gap-2 border-t pt-3' : 'gap-2'}
+                  style={{ borderColor: c.line }}
+                >
+                  {runs.length > 1 && <Text style={s.date}>{run.name}</Text>}
+                  <View style={s.times}>
+                    <View style={s.cell}>
+                      <Copy>Sunset</Copy>
+                      <Text style={s.time}>{time(forecast.sunset)}</Text>
+                    </View>
+                    <View style={s.cell}>
+                      <Copy>Leave home by</Copy>
+                      <Text style={s.time}>{time(forecast.leave)}</Text>
+                    </View>
+                  </View>
+                  <Badge verdict={forecast.verdict} />
+                  {passed && <Copy style={{ color: c.orange }}>Today’s sunset has passed.</Copy>}
+                </View>
+              );
+            })}
           </PressableFeedback>
         );
       })}
