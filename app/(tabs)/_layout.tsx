@@ -5,10 +5,32 @@ import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
 import { palette as c } from '@/lib/sunset';
+
+function DaystrideLogo() {
+  return (
+    <View accessible accessibilityRole="image" accessibilityLabel="Daystride">
+      {Platform.OS === 'web' ? (
+        <Image
+          source={{
+            uri: 'https://files.bilt.me/uploads/user_3Lxe2utqen0MTxRRmTsd2IMUyJB/fce2680a-11bc-4165-b23d-2fc8f83eb197.svg',
+          }}
+          style={{ width: 100, height: 88 }}
+          resizeMode="cover"
+        />
+      ) : (
+        <SvgUri
+          uri={Image.resolveAssetSource(require('@/assets/dayride.svg'))?.uri ?? null}
+          width={100}
+          height={88}
+        />
+      )}
+    </View>
+  );
+}
+
 export default function TabLayout() {
   return (
     <>
-      {/* Expo StatusBar uses `style` for the icon color, not a React Native style object. */}
       {/* eslint-disable-next-line react/style-prop-object */}
       <StatusBar style="dark" />
       <Tabs
@@ -19,6 +41,8 @@ export default function TabLayout() {
         })}
         screenOptions={{
           headerStyle: { backgroundColor: c.paper, height: 100 },
+          headerTitleAlign: 'left',
+          headerTitle: () => <DaystrideLogo />,
           headerTintColor: c.ink,
           headerShadowVisible: false,
           sceneStyle: { backgroundColor: c.paper },
@@ -31,30 +55,6 @@ export default function TabLayout() {
           name="index"
           options={{
             title: 'This week',
-            headerTitle: 'Dayride',
-            headerRight: () => (
-              <View
-                className="mr-4"
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-              >
-                {Platform.OS === 'web' ? (
-                  <Image
-                    source={{
-                      uri: 'https://files.bilt.me/uploads/user_3Lxe2utqen0MTxRRmTsd2IMUyJB/fce2680a-11bc-4165-b23d-2fc8f83eb197.svg',
-                    }}
-                    style={{ width: 200, height: 88 }}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <SvgUri
-                    uri={Image.resolveAssetSource(require('@/assets/dayride.svg'))?.uri ?? null}
-                    width={200}
-                    height={88}
-                  />
-                )}
-              </View>
-            ),
             tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
           }}
         />
@@ -62,30 +62,6 @@ export default function TabLayout() {
           name="my-run"
           options={{
             title: 'My runs',
-            headerTitle: 'Dayride',
-            headerRight: () => (
-              <View
-                className="mr-4"
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-              >
-                {Platform.OS === 'web' ? (
-                  <Image
-                    source={{
-                      uri: 'https://files.bilt.me/uploads/user_3Lxe2utqen0MTxRRmTsd2IMUyJB/fce2680a-11bc-4165-b23d-2fc8f83eb197.svg',
-                    }}
-                    style={{ width: 200, height: 88 }}
-                    resizeMode="contain"
-                  />
-                ) : (
-                  <SvgUri
-                    uri={Image.resolveAssetSource(require('@/assets/dayride.svg'))?.uri ?? null}
-                    width={200}
-                    height={88}
-                  />
-                )}
-              </View>
-            ),
             tabBarIcon: ({ color, size }) => <SlidersHorizontal color={color} size={size} />,
           }}
         />

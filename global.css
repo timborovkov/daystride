@@ -37,6 +37,25 @@
  * }
  */
 
+@layer theme {
+  :root {
+    @variant light {
+      --accent: oklch(0.49 0.16 34);
+      --accent-foreground: oklch(1 0 0);
+      --accent-soft: oklch(0.93 0.045 55);
+      --accent-soft-foreground: var(--accent);
+      --focus: var(--accent);
+    }
+    @variant dark {
+      --accent: oklch(0.74 0.15 42);
+      --accent-foreground: oklch(0.19 0.02 35);
+      --accent-soft: oklch(0.28 0.05 40);
+      --accent-soft-foreground: var(--accent);
+      --focus: var(--accent);
+    }
+  }
+}
+
 @source './node_modules/heroui-native/lib';
 
 /* Calculated HeroUI color tokens are registered for web in lib/registerColorTokens.ts. */
