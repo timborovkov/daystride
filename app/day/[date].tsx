@@ -5,13 +5,13 @@ import { FlatList, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button } from 'heroui-native';
 import { RunFilter } from '@/components/RunFilter';
-import type { Profile } from '@/lib/sunset';
+import type { Profile, SolarMode } from '@/lib/sunset';
 import { Footprints, House, Moon, Sun, Sunset, Flag } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 export default function Day() {
-  const { date } = useLocalSearchParams<{ date: string }>();
+  const { date, mode } = useLocalSearchParams<{ date: string; mode?: string }>();
   const { nearbyRuns, loading, isSample } = useRun();
   const [selected, setSelected] = useState('');
   const noon = dayNoon(date);
@@ -60,7 +60,13 @@ export default function Day() {
           </View>
         }
         renderItem={({ item }) => (
-          <RunTimeline profile={item.profile} noon={noon} isSample={isSample} />
+          <RunTimeline
+            key={mode}
+            profile={item.profile}
+            noon={noon}
+            isSample={isSample}
+            mode={mode === 'sunrise' ? 'sunrise' : 'sunset'}
+          />
         )}
       />
     </KeyboardAvoidingView>
@@ -70,12 +76,14 @@ function RunTimeline({
   profile,
   noon,
   isSample,
+  mode,
 }: {
   profile: Profile;
   noon: number;
   isSample: boolean;
+  mode: SolarMode;
 }) {
-  const d = calculate(noon, profile);
+  const d = calculate(noon, profile, mode);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied' | 'failed'>('idle');
   async function copyRun() {
     setCopyStatus('copying');
@@ -123,7 +131,11 @@ function RunTimeline({
           </View>
         ))}
       </View>
-      <Copy style={s.note}>Last light marks the end of civil twilight.</Copy>
+      <Copy style={s.note}>
+        {d.morning
+          ? 'Dawn marks the start of civil twilight.'
+          : 'Last light marks the end of civil twilight.'}
+      </Copy>
       <View className="gap-2" style={s.share}>
         <Button variant="secondary" isDisabled={copyStatus === 'copying'} onPress={copyRun}>
           {copyStatus === 'copying' ? 'Copying…' : 'Tell someone'}

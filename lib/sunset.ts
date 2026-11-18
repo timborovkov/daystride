@@ -8,11 +8,8 @@ export const sample = {
   run: 40,
   travel: 10,
 };
-export type SunsetTiming = 'start' | 'middle' | 'end';
-export type Profile = typeof sample & {
-  sunsetTiming?: SunsetTiming;
-  solarMode?: 'sunrise' | 'sunset';
-};
+export type SolarMode = 'sunrise' | 'sunset';
+export type Profile = typeof sample;
 export const routeZone = (profile: Profile) => lookup(profile.latitude, profile.longitude);
 const clocks = new Map<string, Intl.DateTimeFormat>();
 const calendar = new Intl.DateTimeFormat('en-GB', {
@@ -56,17 +53,15 @@ export const dayKey = (date: Date, profile: Profile) => {
     .join('-');
 };
 export const dayNoon = (key: string) => Date.parse(`${key}T12:00:00Z`);
-export function calculate(date: number, p: Profile) {
+export function calculate(date: number, p: Profile, mode: SolarMode) {
   const sun = getTimes(new Date(date - p.longitude * 240000), p.latitude, p.longitude);
-  const morning = p.solarMode === 'sunrise';
+  const morning = mode === 'sunrise';
   const eventLabel = morning ? 'Sunrise' : 'Sunset';
   const event = (morning ? sun.sunrise : sun.sunset)?.getTime() ?? NaN;
   const golden = (morning ? sun.goldenHourEnd : sun.goldenHour)?.getTime() ?? NaN;
   const last = (morning ? sun.dawn : sun.dusk)?.getTime() ?? NaN;
   const duration = p.run * 60000;
-  const offset =
-    p.sunsetTiming === 'start' ? 0 : p.sunsetTiming === 'end' ? duration : duration / 2;
-  const start = event - offset,
+  const start = event - duration / 2,
     leave = start - p.travel * 60000,
     finish = start + p.run * 60000;
   const minutes = (morning ? start - last : last - finish) / 60000;

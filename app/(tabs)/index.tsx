@@ -1,7 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { PressableFeedback } from 'heroui-native';
-import { ChevronRight, Clock, Sunset } from 'lucide-react-native';
+import { Button, PressableFeedback } from 'heroui-native';
+import { ChevronRight, Clock, Sunrise, Sunset } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
+import type { SolarMode } from '@/lib/sunset';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayKey, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
@@ -9,6 +11,8 @@ import { useState } from 'react';
 import { RunFilter } from '@/components/RunFilter';
 export default function Week() {
   const [selection, setSelection] = useState('');
+  const [mode, setMode] = useState<SolarMode>('sunset');
+  const EventIcon = mode === 'sunrise' ? Sunrise : Sunset;
   const { profile, nearbyRuns, loading, now } = useRun();
   if (loading) return <RunLoading />;
   const selected =
@@ -21,6 +25,24 @@ export default function Week() {
     <RunPage>
       <View className="mb-3">
         <Title>This week</Title>
+      </View>
+      <View className="mb-3 flex-row gap-2" accessibilityRole="tablist">
+        {(['sunrise', 'sunset'] as const).map((tab) => (
+          <Button
+            key={tab}
+            className="flex-1"
+            variant={mode === tab ? 'primary' : 'secondary'}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: mode === tab }}
+            onPress={() => {
+              if (mode === tab) return;
+              setMode(tab);
+              void Haptics.selectionAsync();
+            }}
+          >
+            {tab === 'sunrise' ? 'Sunrise' : 'Sunset'}
+          </Button>
+        ))}
       </View>
       {nearbyRuns.length > 1 && (
         <View className="mb-3">
@@ -36,7 +58,7 @@ export default function Week() {
             onPress={() =>
               router.push({
                 pathname: '/day/[date]',
-                params: { date: new Date(date).toISOString().slice(0, 10) },
+                params: { date: new Date(date).toISOString().slice(0, 10), mode },
               })
             }
             style={[s.row, i === 0 && s.today]}
@@ -49,7 +71,7 @@ export default function Week() {
               <ChevronRight size={16} color={c.muted} />
             </View>
             {visibleRuns.map(({ run, index }, position) => {
-              const forecast = calculate(date, run);
+              const forecast = calculate(date, run, mode);
               const passed = date === dayNoon(dayKey(new Date(now), run)) && now >= forecast.event;
               return (
                 <View
@@ -75,7 +97,7 @@ export default function Week() {
                     </View>
                     <View className="flex-1 gap-1 border-l pl-3" style={{ borderColor: c.line }}>
                       <View className="flex-row items-center gap-1.5">
-                        <Sunset size={14} color={c.muted} />
+                        <EventIcon size={14} color={c.muted} />
                         <Copy style={{ flexShrink: 1 }}>{forecast.eventLabel}</Copy>
                       </View>
                       <Text style={s.time}>{time(forecast.event, run)}</Text>
