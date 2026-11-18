@@ -4,7 +4,6 @@ import * as Haptics from 'expo-haptics';
 import { FlatList, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button } from 'heroui-native';
-import { RunFilter } from '@/components/RunFilter';
 import type { Profile, SolarMode } from '@/lib/sunset';
 import { Footprints, House, Moon, Sun, Sunset, Flag } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
@@ -13,7 +12,6 @@ import { calculate, dateLabel, dayNoon, palette as c, routeZone, time } from '@/
 export default function Day() {
   const { date, mode } = useLocalSearchParams<{ date: string; mode?: string }>();
   const { nearbyRuns, loading, isSample } = useRun();
-  const [selected, setSelected] = useState('');
   const noon = dayNoon(date);
   if (loading) return <RunLoading />;
   if (!Number.isFinite(noon))
@@ -23,9 +21,6 @@ export default function Day() {
         <Button onPress={() => router.replace('/')}>Back to this week</Button>
       </RunPage>
     );
-  const matches = nearbyRuns
-    .map(({ run: profile, index }) => ({ profile, index }))
-    .filter(({ index }) => !selected || String(index) === selected);
   return (
     <KeyboardAvoidingView
       className="flex-1"
@@ -41,28 +36,13 @@ export default function Day() {
           gap: 20,
         }}
         keyboardShouldPersistTaps="handled"
-        data={matches}
+        data={nearbyRuns}
         keyExtractor={({ index }) => String(index)}
-        ListHeaderComponent={
-          <View className="gap-3">
-            <Title>{dateLabel(noon)}</Title>
-
-            <RunFilter runs={nearbyRuns} selected={selected} onChange={setSelected} />
-          </View>
-        }
-        ListEmptyComponent={
-          <View className="items-start gap-3">
-            <Footprints size={22} color={c.muted} />
-            <Copy>No runs match this filter.</Copy>
-            <Button variant="secondary" onPress={() => setSelected('')}>
-              Clear filter
-            </Button>
-          </View>
-        }
+        ListHeaderComponent={<Title>{dateLabel(noon)}</Title>}
         renderItem={({ item }) => (
           <RunTimeline
             key={mode}
-            profile={item.profile}
+            profile={item.run}
             noon={noon}
             isSample={isSample}
             mode={mode === 'sunrise' ? 'sunrise' : 'sunset'}

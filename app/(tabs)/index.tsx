@@ -8,18 +8,11 @@ import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayKey, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 import { useState } from 'react';
-import { RunFilter } from '@/components/RunFilter';
 export default function Week() {
-  const [selection, setSelection] = useState('');
   const [mode, setMode] = useState<SolarMode>('sunset');
   const EventIcon = mode === 'sunrise' ? Sunrise : Sunset;
   const { profile, nearbyRuns, loading, now } = useRun();
   if (loading) return <RunLoading />;
-  const selected =
-    nearbyRuns.length > 1 && nearbyRuns.some(({ index }) => String(index) === selection)
-      ? selection
-      : '';
-  const visibleRuns = nearbyRuns.filter(({ index }) => !selected || String(index) === selected);
   const today = dayNoon(dayKey(new Date(now), profile));
   return (
     <RunPage>
@@ -44,11 +37,6 @@ export default function Week() {
           </Button>
         ))}
       </View>
-      {nearbyRuns.length > 1 && (
-        <View className="mb-3">
-          <RunFilter runs={nearbyRuns} selected={selected} onChange={setSelection} />
-        </View>
-      )}
       {Array.from({ length: 7 }, (_, i) => {
         const date = today + i * 86400000;
         return (
@@ -70,7 +58,7 @@ export default function Week() {
               </Text>
               <ChevronRight size={16} color={c.muted} />
             </View>
-            {visibleRuns.map(({ run, index }, position) => {
+            {nearbyRuns.map(({ run, index }, position) => {
               const forecast = calculate(date, run, mode);
               const passed = date === dayNoon(dayKey(new Date(now), run)) && now >= forecast.event;
               return (
