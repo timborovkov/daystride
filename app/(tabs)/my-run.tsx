@@ -63,6 +63,8 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
     travel: String(initial?.travel ?? 10),
   });
   const [sunsetTiming, setSunsetTiming] = useState<SunsetTiming>(initial?.sunsetTiming ?? 'middle');
+  const [solarMode, setSolarMode] = useState<'sunrise' | 'sunset'>(initial?.solarMode ?? 'sunset');
+  const eventLabel = solarMode === 'sunrise' ? 'Sunrise' : 'Sunset';
   const [pin, setPin] = useState<LatLng | undefined>(initial);
   const pinVersion = useRef(0);
   const locationRequest = useRef(0);
@@ -128,7 +130,15 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
     setPending(true);
     try {
       await save(
-        { name, latitude: pin.latitude, longitude: pin.longitude, run, travel, sunsetTiming },
+        {
+          name,
+          latitude: pin.latitude,
+          longitude: pin.longitude,
+          run,
+          travel,
+          sunsetTiming,
+          solarMode,
+        },
         index,
       );
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -148,6 +158,29 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
       <RunPage>
         <Title>{initial ? 'Edit run' : 'Add run'}</Title>
         <View className="gap-4 py-5">
+          <View
+            className="flex-row gap-2"
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Sunrise or Sunset"
+          >
+            {(['sunrise', 'sunset'] as const).map((mode) => (
+              <Button
+                key={mode}
+                className="flex-1"
+                variant={mode === solarMode ? 'primary' : 'secondary'}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: mode === solarMode }}
+                isDisabled={pending}
+                onPress={() => {
+                  if (mode === solarMode) return;
+                  setSolarMode(mode);
+                  void Haptics.selectionAsync();
+                }}
+              >
+                {mode === 'sunrise' ? 'Sunrise' : 'Sunset'}
+              </Button>
+            ))}
+          </View>
           {fields.map(([key, label]) => (
             <TextField key={key} isDisabled={pending}>
               <Label>{label}</Label>
@@ -160,11 +193,11 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
             </TextField>
           ))}
           <View className="gap-2">
-            <Copy>Sunset during the run</Copy>
+            <Copy>{eventLabel} during the run</Copy>
             <View
               className="flex-row gap-2"
               accessibilityRole="radiogroup"
-              accessibilityLabel="Sunset during the run"
+              accessibilityLabel={`${eventLabel} during the run`}
             >
               {(['start', 'middle', 'end'] as const).map((timing) => (
                 <Button

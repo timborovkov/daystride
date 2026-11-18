@@ -94,9 +94,9 @@ function RunTimeline({
     { label: 'Leave home', at: d.leave, Icon: House },
     { label: 'Start running', at: d.start, Icon: Footprints },
     { label: 'Golden hour', at: d.golden, Icon: Sun },
-    { label: 'Sunset', at: d.sunset, Icon: Sunset },
+    { label: d.eventLabel, at: d.event, Icon: d.morning ? Sun : Sunset },
     { label: 'Finish', at: d.finish, Icon: Flag },
-    { label: 'Last light', at: d.last, Icon: Moon },
+    { label: d.morning ? 'Dawn' : 'Last light', at: d.last, Icon: Moon },
   ].sort((a, b) => a.at - b.at);
   return (
     <View>
@@ -110,11 +110,11 @@ function RunTimeline({
       </View>
       <View style={s.timeline}>
         {events.map(({ label, at, Icon }, i) => (
-          <View key={label} style={[s.event, label === 'Sunset' && s.sunset]}>
+          <View key={label} style={[s.event, label === d.eventLabel && s.sunset]}>
             <View style={s.rail}>
               {i > 0 && <View style={s.before} />}
-              <View style={[s.dot, label === 'Sunset' && { backgroundColor: c.peach }]}>
-                <Icon size={18} color={label === 'Sunset' ? c.orange : c.ink} />
+              <View style={[s.dot, label === d.eventLabel && { backgroundColor: c.peach }]}>
+                <Icon size={18} color={label === d.eventLabel ? c.orange : c.ink} />
               </View>
               {i < events.length - 1 && <View style={s.after} />}
             </View>

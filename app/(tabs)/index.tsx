@@ -69,7 +69,7 @@ export default function Week() {
             </View>
             {visibleRuns.map(({ run, index }, position) => {
               const forecast = calculate(date, run);
-              const passed = date === dayNoon(dayKey(new Date(now), run)) && now >= forecast.sunset;
+              const passed = date === dayNoon(dayKey(new Date(now), run)) && now >= forecast.event;
               return (
                 <View
                   key={index}
@@ -95,12 +95,16 @@ export default function Week() {
                     <View className="flex-1 gap-1 border-l pl-3" style={{ borderColor: c.line }}>
                       <View className="flex-row items-center gap-1.5">
                         <Sunset size={14} color={c.muted} />
-                        <Copy style={{ flexShrink: 1 }}>Sunset</Copy>
+                        <Copy style={{ flexShrink: 1 }}>{forecast.eventLabel}</Copy>
                       </View>
-                      <Text style={s.time}>{time(forecast.sunset, run)}</Text>
+                      <Text style={s.time}>{time(forecast.event, run)}</Text>
                     </View>
                   </View>
-                  {passed && <Copy style={{ color: c.orange }}>Today’s sunset has passed.</Copy>}
+                  {passed && (
+                    <Copy style={{ color: c.orange }}>
+                      Today’s {forecast.eventLabel.toLowerCase()} has passed.
+                    </Copy>
+                  )}
                 </View>
               );
             })}

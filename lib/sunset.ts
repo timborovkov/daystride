@@ -9,7 +9,10 @@ export const sample = {
   travel: 10,
 };
 export type SunsetTiming = 'start' | 'middle' | 'end';
-export type Profile = typeof sample & { sunsetTiming?: SunsetTiming };
+export type Profile = typeof sample & {
+  sunsetTiming?: SunsetTiming;
+  solarMode?: 'sunrise' | 'sunset';
+};
 export const routeZone = (profile: Profile) => lookup(profile.latitude, profile.longitude);
 const clocks = new Map<string, Intl.DateTimeFormat>();
 const calendar = new Intl.DateTimeFormat('en-GB', {
@@ -55,24 +58,34 @@ export const dayKey = (date: Date, profile: Profile) => {
 export const dayNoon = (key: string) => Date.parse(`${key}T12:00:00Z`);
 export function calculate(date: number, p: Profile) {
   const sun = getTimes(new Date(date - p.longitude * 240000), p.latitude, p.longitude);
-  const sunset = sun.sunset?.getTime() ?? NaN,
-    golden = sun.goldenHour?.getTime() ?? NaN,
-    last = sun.dusk?.getTime() ?? NaN;
+  const morning = p.solarMode === 'sunrise';
+  const eventLabel = morning ? 'Sunrise' : 'Sunset';
+  const event = (morning ? sun.sunrise : sun.sunset)?.getTime() ?? NaN;
+  const golden = (morning ? sun.goldenHourEnd : sun.goldenHour)?.getTime() ?? NaN;
+  const last = (morning ? sun.dawn : sun.dusk)?.getTime() ?? NaN;
   const duration = p.run * 60000;
   const offset =
     p.sunsetTiming === 'start' ? 0 : p.sunsetTiming === 'end' ? duration : duration / 2;
-  const start = sunset - offset,
+  const start = event - offset,
     leave = start - p.travel * 60000,
     finish = start + p.run * 60000;
-  const minutes = (last - finish) / 60000;
+  const minutes = (morning ? start - last : last - finish) / 60000;
   const verdict = !Number.isFinite(minutes)
     ? ({ tone: 'unknown', label: 'Sun times unavailable' } as const)
     : minutes < 0
-      ? ({ tone: 'red', label: 'You’d finish after dark' } as const)
+      ? ({
+          tone: 'red',
+          label: morning ? 'You’d start before dawn' : 'You’d finish after dark',
+        } as const)
       : minutes < 10
         ? ({ tone: 'amber', label: 'Cutting it fine' } as const)
-        : ({ tone: 'green', label: `Done ${Math.floor(minutes)} min before dark` } as const);
-  return { sunset, golden, last, start, leave, finish, verdict };
+        : ({
+            tone: 'green',
+            label: morning
+              ? `Start ${Math.floor(minutes)} min after dawn`
+              : `Done ${Math.floor(minutes)} min before dark`,
+          } as const);
+  return { event, eventLabel, morning, golden, last, start, leave, finish, verdict };
 }
 export const palette = {
   paper: '#f8f4ef',
