@@ -1,13 +1,16 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Button } from 'heroui-native';
+import { Button, Input, Label, TextField } from 'heroui-native';
+import type { Profile } from '@/lib/sunset';
 import { Footprints, House, Moon, Sun, Sunset, Flag } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayNoon, palette as c, time } from '@/lib/sunset';
 export default function Day() {
   const { date } = useLocalSearchParams<{ date: string }>();
-  const { profile, loading } = useRun();
+  const { runs, loading, isSample } = useRun();
+  const [query, setQuery] = useState('');
   const noon = dayNoon(date);
   if (loading) return <RunLoading />;
   if (!Number.isFinite(noon))
@@ -17,6 +20,68 @@ export default function Day() {
         <Button onPress={() => router.replace('/')}>Back to this week</Button>
       </RunPage>
     );
+  const matches = runs
+    .map((profile, index) => ({ profile, index }))
+    .filter(({ profile }) => profile.name.toLowerCase().includes(query.trim().toLowerCase()));
+  return (
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <FlatList
+        style={{ backgroundColor: c.paper }}
+        contentContainerStyle={{
+          width: '100%',
+          maxWidth: 620,
+          alignSelf: 'center',
+          padding: 20,
+          gap: 20,
+        }}
+        keyboardShouldPersistTaps="handled"
+        data={matches}
+        keyExtractor={({ index }) => String(index)}
+        ListHeaderComponent={
+          <View className="gap-3">
+            <Title>{dateLabel(noon)}</Title>
+            <Copy>UK local time</Copy>
+            {runs.length > 1 && (
+              <TextField>
+                <Label>Filter by run name</Label>
+                <Input
+                  accessibilityLabel="Filter by run name"
+                  placeholder="All runs"
+                  value={query}
+                  onChangeText={setQuery}
+                />
+              </TextField>
+            )}
+          </View>
+        }
+        ListEmptyComponent={
+          <View className="items-start gap-3">
+            <Footprints size={22} color={c.muted} />
+            <Copy>No runs match that name.</Copy>
+            <Button variant="secondary" onPress={() => setQuery('')}>
+              Clear filter
+            </Button>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <RunTimeline profile={item.profile} noon={noon} isSample={isSample} />
+        )}
+      />
+    </KeyboardAvoidingView>
+  );
+}
+function RunTimeline({
+  profile,
+  noon,
+  isSample,
+}: {
+  profile: Profile;
+  noon: number;
+  isSample: boolean;
+}) {
   const d = calculate(noon, profile);
   const events = [
     { label: 'Leave home', at: d.leave, Icon: House },
@@ -27,9 +92,11 @@ export default function Day() {
     { label: 'Last light', at: d.last, Icon: Moon },
   ].sort((a, b) => a.at - b.at);
   return (
-    <RunPage>
-      <Title>{dateLabel(noon)}</Title>
-      <Copy style={{ marginTop: 5 }}>{profile.name} · UK local time</Copy>
+    <View>
+      <Text accessibilityRole="header" style={s.runName}>
+        {profile.name}
+        {isSample ? ' · Sample' : ''}
+      </Text>
       <View style={s.timeline}>
         {events.map(({ label, at, Icon }, i) => (
           <View key={label} style={[s.event, label === 'Sunset' && s.sunset]}>
@@ -50,12 +117,13 @@ export default function Day() {
         <Badge verdict={d.verdict} />
         <Copy style={{ color: '#eee5f2' }}>Last light is the end of civil twilight.</Copy>
       </View>
-    </RunPage>
+    </View>
   );
 }
 const s = StyleSheet.create({
+  runName: { color: c.ink, fontFamily: 'Inter_700Bold', fontSize: 22 },
   timeline: {
-    marginTop: 22,
+    marginTop: 8,
     backgroundColor: c.white,
     borderRadius: 18,
     borderWidth: 1,

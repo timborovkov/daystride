@@ -36,7 +36,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="my-run"
           options={{
-            title: 'My run',
+            title: 'My runs',
             headerTitle: 'Sunset Run',
             tabBarIcon: ({ color, size }) => <SlidersHorizontal color={color} size={size} />,
           }}

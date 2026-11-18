@@ -6,7 +6,7 @@ import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayKey, dayNoon, palette as c, time } from '@/lib/sunset';
 export default function Week() {
-  const { profile, isSample, loading, now } = useRun();
+  const { profile, runs, isSample, loading, now } = useRun();
   if (loading) return <RunLoading />;
   const today = dayNoon(dayKey(new Date(now)));
   return (
@@ -24,7 +24,7 @@ export default function Week() {
           <View style={s.location}>
             <MapPin size={14} color="#ffdfc8" />
             <Copy style={{ color: '#ffdfc8', flexShrink: 1 }}>
-              {profile.name}
+              {runs.length > 1 ? `${runs.length} runs · ${profile.name} preview` : profile.name}
               {isSample ? ' · Sample profile' : ''}
             </Copy>
           </View>

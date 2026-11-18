@@ -41,12 +41,12 @@ export function useAsyncStorage<T>(
   const setValue = useCallback(
     async (value: T | null) => {
       try {
-        setStoredValue(value);
         if (value === null) {
           await AsyncStorage.removeItem(key);
         } else {
           await AsyncStorage.setItem(key, JSON.stringify(value));
         }
+        setStoredValue(value);
       } catch (error) {
         console.error(`Error setting ${key} in AsyncStorage:`, error);
         throw error;
