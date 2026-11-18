@@ -1,4 +1,6 @@
 import { CalendarDays, SlidersHorizontal } from 'lucide-react-native';
+import { Image, Platform, View } from 'react-native';
+import { SvgUri } from 'react-native-svg';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Haptics from 'expo-haptics';
@@ -29,7 +31,30 @@ export default function TabLayout() {
           name="index"
           options={{
             title: 'This week',
-            headerTitle: 'Sunset Run',
+            headerTitle: 'Dayride',
+            headerRight: () => (
+              <View
+                className="mr-4"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                {Platform.OS === 'web' ? (
+                  <Image
+                    source={{
+                      uri: 'https://files.bilt.me/uploads/user_3Lxe2utqen0MTxRRmTsd2IMUyJB/fce2680a-11bc-4165-b23d-2fc8f83eb197.svg',
+                    }}
+                    style={{ width: 100, height: 44 }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <SvgUri
+                    uri={Image.resolveAssetSource(require('@/assets/dayride.svg'))?.uri ?? null}
+                    width={100}
+                    height={44}
+                  />
+                )}
+              </View>
+            ),
             tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
           }}
         />
@@ -37,7 +62,30 @@ export default function TabLayout() {
           name="my-run"
           options={{
             title: 'My runs',
-            headerTitle: 'Sunset Run',
+            headerTitle: 'Dayride',
+            headerRight: () => (
+              <View
+                className="mr-4"
+                accessibilityElementsHidden
+                importantForAccessibility="no-hide-descendants"
+              >
+                {Platform.OS === 'web' ? (
+                  <Image
+                    source={{
+                      uri: 'https://files.bilt.me/uploads/user_3Lxe2utqen0MTxRRmTsd2IMUyJB/fce2680a-11bc-4165-b23d-2fc8f83eb197.svg',
+                    }}
+                    style={{ width: 100, height: 44 }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <SvgUri
+                    uri={Image.resolveAssetSource(require('@/assets/dayride.svg'))?.uri ?? null}
+                    width={100}
+                    height={44}
+                  />
+                )}
+              </View>
+            ),
             tabBarIcon: ({ color, size }) => <SlidersHorizontal color={color} size={size} />,
           }}
         />

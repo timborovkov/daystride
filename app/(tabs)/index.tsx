@@ -1,7 +1,7 @@
-import { Image, View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { PressableFeedback } from 'heroui-native';
-import { ChevronRight, Clock, MapPin, Sunset } from 'lucide-react-native';
+import { ChevronRight, Clock, Sunset } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayKey, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { RunFilter } from '@/components/RunFilter';
 export default function Week() {
   const [selection, setSelection] = useState('');
-  const { profile, runs, nearbyRuns, isSample, loading, now } = useRun();
+  const { profile, nearbyRuns, loading, now } = useRun();
   if (loading) return <RunLoading />;
   const selected =
     nearbyRuns.length > 1 && nearbyRuns.some(({ index }) => String(index) === selection)
@@ -19,26 +19,7 @@ export default function Week() {
   const today = dayNoon(dayKey(new Date(now), profile));
   return (
     <RunPage>
-      <View style={s.hero}>
-        <Image
-          source={require('@/assets/lake.png')}
-          style={{ width: '100%', height: '100%', position: 'absolute' }}
-          resizeMode="cover"
-        />
-        <View style={s.scrim} />
-        <View style={s.heroContent}>
-          <Sunset color="#ffd9ba" size={27} />
-          <Text style={s.heroTitle}>Sunset Run</Text>
-          <View style={s.location}>
-            <MapPin size={14} color="#ffdfc8" />
-            <Copy style={{ color: '#ffdfc8', flexShrink: 1 }}>
-              {runs.length > 1 ? `${runs.length} runs` : profile.name}
-              {isSample ? ' · Sample profile' : ''}
-            </Copy>
-          </View>
-        </View>
-      </View>
-      <View style={s.heading}>
+      <View className="mb-3">
         <Title>This week</Title>
       </View>
       {nearbyRuns.length > 1 && (
@@ -115,26 +96,6 @@ export default function Week() {
   );
 }
 const s = StyleSheet.create({
-  hero: {
-    height: 176,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: c.navy,
-    justifyContent: 'flex-end',
-  },
-  scrim: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(24,23,43,0.43)' },
-  heroContent: { padding: 20, gap: 5 },
-  heroTitle: { color: '#fffdfa', fontFamily: 'Inter_700Bold', fontSize: 36, letterSpacing: -1.6 },
-  location: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  heading: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 5,
-    marginTop: 22,
-    marginBottom: 12,
-  },
   row: {
     paddingHorizontal: 14,
     paddingVertical: 12,

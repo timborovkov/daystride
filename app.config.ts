@@ -10,7 +10,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: 'Sunset Run',
+    name: 'Dayride',
     slug: 'goldenpace',
     version: process.env.BILT_APP_VERSION ?? '1.0.0',
     orientation: 'portrait',
@@ -47,8 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-location',
         {
-          locationWhenInUsePermission:
-            'Allow Sunset Run to use your location to place your run pin.',
+          locationWhenInUsePermission: 'Allow Dayride to use your location to place your run pin.',
         },
       ],
       ...nativePlugins,
