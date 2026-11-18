@@ -159,7 +159,7 @@ function Form({ initial, index, close }: { initial?: Profile; index?: number; cl
           <View className="h-64 overflow-hidden rounded-2xl">
             <MapView
               ref={map}
-              style={{ flex: 1 }}
+              style={{ height: 256, width: '100%' }}
               initialRegion={region(initial ?? sample)}
               markers={pin ? [{ coordinate: pin }] : []}
               onPress={({ coordinate }) => {
