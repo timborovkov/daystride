@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { setStringAsync } from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
 import { FlatList, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button, Input, Label, TextField } from 'heroui-native';
@@ -83,6 +85,20 @@ function RunTimeline({
   isSample: boolean;
 }) {
   const d = calculate(noon, profile);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied' | 'failed'>('idle');
+  async function copyRun() {
+    setCopyStatus('copying');
+    try {
+      const copied = await setStringAsync(
+        `Running at ${profile.name}, leaving ${time(d.leave, profile)}, back by ${time(d.finish, profile)}`,
+      );
+      setCopyStatus(copied ? 'copied' : 'failed');
+      if (!copied) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    } catch {
+      setCopyStatus('failed');
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  }
   const events = [
     { label: 'Leave home', at: d.leave, Icon: House },
     { label: 'Start running', at: d.start, Icon: Footprints },
@@ -112,6 +128,15 @@ function RunTimeline({
             <Text style={s.time}>{time(at, profile)}</Text>
           </View>
         ))}
+      </View>
+      <View className="mt-3 gap-2">
+        <Button variant="secondary" isDisabled={copyStatus === 'copying'} onPress={copyRun}>
+          {copyStatus === 'copying' ? 'Copying…' : 'Tell someone'}
+        </Button>
+        <View accessibilityLiveRegion="polite">
+          {copyStatus === 'copied' && <Copy>Copied to clipboard.</Copy>}
+          {copyStatus === 'failed' && <Copy>Couldn’t copy the message. Try again.</Copy>}
+        </View>
       </View>
       <View style={s.verdict}>
         <Text style={s.verdictTitle}>Safety verdict</Text>
