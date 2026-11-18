@@ -11,7 +11,7 @@ import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 export default function Day() {
   const { date, mode } = useLocalSearchParams<{ date: string; mode?: string }>();
-  const { nearbyRuns, loading, isSample } = useRun();
+  const { nearbyRuns, loading } = useRun();
   const noon = dayNoon(date);
   if (loading) return <RunLoading />;
   if (!Number.isFinite(noon))
@@ -44,7 +44,6 @@ export default function Day() {
             key={mode}
             profile={item.run}
             noon={noon}
-            isSample={isSample}
             mode={mode === 'sunrise' ? 'sunrise' : 'sunset'}
           />
         )}
@@ -52,17 +51,7 @@ export default function Day() {
     </KeyboardAvoidingView>
   );
 }
-function RunTimeline({
-  profile,
-  noon,
-  isSample,
-  mode,
-}: {
-  profile: Profile;
-  noon: number;
-  isSample: boolean;
-  mode: SolarMode;
-}) {
+function RunTimeline({ profile, noon, mode }: { profile: Profile; noon: number; mode: SolarMode }) {
   const d = calculate(noon, profile, mode);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied' | 'failed'>('idle');
   async function copyRun() {
@@ -90,7 +79,6 @@ function RunTimeline({
     <View>
       <Text accessibilityRole="header" style={s.runName}>
         {profile.name}
-        {isSample ? ' · Sample' : ''}
       </Text>
       <Copy>{routeZone(profile).replaceAll('_', ' ')}</Copy>
       <View className="flex-row flex-wrap items-center gap-2" style={s.safety}>

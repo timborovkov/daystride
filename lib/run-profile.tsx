@@ -5,7 +5,6 @@ import { useAsyncStorage } from '@/hooks/useAsyncStorage';
 import { sample, type Profile } from './sunset';
 const RunContext = createContext({
   profile: sample,
-  isSample: true,
   loading: true,
   runs: [sample],
   nearbyRuns: [{ run: sample, index: 0, distance: 0 }],
@@ -24,11 +23,10 @@ export function RunProvider({ children }: { children: ReactNode }) {
     return {
       profile: runs[0] ?? sample,
       runs,
-      isSample: !saved,
       loading,
       now,
       save: async (profile: Profile, index?: number) => {
-        const next = saved ? [...runs] : [];
+        const next = [...runs];
         if (index === undefined) next.push(profile);
         else next[index] = profile;
         await persist(next);

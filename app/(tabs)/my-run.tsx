@@ -21,7 +21,7 @@ const region = (point: LatLng) => ({
   longitudeDelta: 0.05,
 });
 export default function MyRuns() {
-  const { runs, nearbyRuns, loading, isSample } = useRun();
+  const { runs, nearbyRuns, loading } = useRun();
   const [editing, setEditing] = useState<number | 'new' | null>(null);
   if (loading) return <RunLoading />;
   if (editing !== null)
@@ -46,9 +46,7 @@ export default function MyRuns() {
       }
       renderItem={({ item: { run: item, index } }) => (
         <Button variant="secondary" onPress={() => setEditing(index)}>
-          <Button.Label numberOfLines={1}>
-            {isSample ? `${item.name} · Sample` : item.name}
-          </Button.Label>
+          <Button.Label numberOfLines={1}>{item.name}</Button.Label>
         </Button>
       )}
     />
