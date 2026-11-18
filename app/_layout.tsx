@@ -28,6 +28,10 @@ import { initPostHog } from '@/lib/posthog';
 import { registerServiceWorker } from '@/lib/registerServiceWorker';
 import { reportErrorToParent } from '@/lib/reportPreviewError';
 import { InstallPrompt } from '@/components/InstallPrompt';
+import { RunProvider } from '@/lib/run-profile';
+import { palette } from '@/lib/sunset';
+
+export const unstable_settings = { initialRouteName: '(tabs)' };
 
 /**
  * Custom ErrorBoundary that reports React render errors to the parent window (Bilt preview iframe)
@@ -147,9 +151,22 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ title: 'Habits', headerShown: false }} />
-        </Stack>
+        <RunProvider>
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: palette.paper },
+              headerTintColor: palette.ink,
+              headerShadowVisible: false,
+              contentStyle: { backgroundColor: palette.paper },
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ title: 'Sunset Run', headerShown: false }} />
+            <Stack.Screen
+              name="day/[date]"
+              options={{ title: 'Day timeline', headerBackButtonDisplayMode: 'minimal' }}
+            />
+          </Stack>
+        </RunProvider>
         <InstallPrompt />
       </HeroUINativeProvider>
     </GestureHandlerRootView>

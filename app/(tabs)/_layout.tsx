@@ -1,42 +1,44 @@
-import { Home } from 'lucide-react-native';
+import { CalendarDays, SlidersHorizontal } from 'lucide-react-native';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useThemeColor } from 'heroui-native';
-import { useUniwind } from 'uniwind';
-
+import * as Haptics from 'expo-haptics';
+import { palette as c } from '@/lib/sunset';
 export default function TabLayout() {
-  const { theme } = useUniwind();
-  const [background, foreground, border, accent, muted] = useThemeColor([
-    'background',
-    'foreground',
-    'border',
-    'accent',
-    'muted',
-  ]);
-
   return (
     <>
-      <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+      {/* Expo StatusBar uses `style` for the icon color, not a React Native style object. */}
+      {/* eslint-disable-next-line react/style-prop-object */}
+      <StatusBar style="dark" />
       <Tabs
-        screenOptions={{
-          headerStyle: { backgroundColor: background },
-          headerTintColor: foreground,
-          headerTitleStyle: { color: foreground },
-          headerShadowVisible: false,
-          sceneStyle: { backgroundColor: background },
-          tabBarStyle: {
-            backgroundColor: background,
-            borderTopColor: border,
+        screenListeners={({ navigation }) => ({
+          tabPress: () => {
+            if (!navigation.isFocused()) void Haptics.selectionAsync();
           },
-          tabBarActiveTintColor: accent,
-          tabBarInactiveTintColor: muted,
+        })}
+        screenOptions={{
+          headerStyle: { backgroundColor: c.paper },
+          headerTintColor: c.ink,
+          headerShadowVisible: false,
+          sceneStyle: { backgroundColor: c.paper },
+          tabBarStyle: { backgroundColor: c.white, borderTopColor: c.line },
+          tabBarActiveTintColor: c.orange,
+          tabBarInactiveTintColor: c.muted,
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
-            tabBarIcon: ({ color, size }) => <Home color={color} size={size ?? 24} />,
+            title: 'This week',
+            headerTitle: 'Sunset Run',
+            tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
+          }}
+        />
+        <Tabs.Screen
+          name="my-run"
+          options={{
+            title: 'My run',
+            headerTitle: 'Sunset Run',
+            tabBarIcon: ({ color, size }) => <SlidersHorizontal color={color} size={size} />,
           }}
         />
       </Tabs>
