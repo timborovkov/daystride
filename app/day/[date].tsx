@@ -114,6 +114,9 @@ function RunTimeline({
         {isSample ? ' · Sample' : ''}
       </Text>
       <Copy>{routeZone(profile).replaceAll('_', ' ')}</Copy>
+      <View className="flex-row flex-wrap items-center gap-2" style={s.safety}>
+        <Badge verdict={d.verdict} />
+      </View>
       <View style={s.timeline}>
         {events.map(({ label, at, Icon }, i) => (
           <View key={label} style={[s.event, label === 'Sunset' && s.sunset]}>
@@ -129,7 +132,8 @@ function RunTimeline({
           </View>
         ))}
       </View>
-      <View className="mt-3 gap-2">
+      <Copy style={s.note}>Last light marks the end of civil twilight.</Copy>
+      <View className="gap-2" style={s.share}>
         <Button variant="secondary" isDisabled={copyStatus === 'copying'} onPress={copyRun}>
           {copyStatus === 'copying' ? 'Copying…' : 'Tell someone'}
         </Button>
@@ -137,11 +141,6 @@ function RunTimeline({
           {copyStatus === 'copied' && <Copy>Copied to clipboard.</Copy>}
           {copyStatus === 'failed' && <Copy>Couldn’t copy the message. Try again.</Copy>}
         </View>
-      </View>
-      <View style={s.verdict}>
-        <Text style={s.verdictTitle}>Safety verdict</Text>
-        <Badge verdict={d.verdict} />
-        <Copy style={{ color: '#eee5f2' }}>Last light is the end of civil twilight.</Copy>
       </View>
     </View>
   );
@@ -178,6 +177,7 @@ const s = StyleSheet.create({
   after: { position: 'absolute', width: 2, top: '50%', bottom: 0, backgroundColor: c.line },
   label: { flex: 1, color: c.ink, fontFamily: 'Inter_600SemiBold', fontSize: 14 },
   time: { color: c.ink, fontFamily: 'Inter_700Bold', fontSize: 25, fontVariant: ['tabular-nums'] },
-  verdict: { backgroundColor: c.navy, padding: 16, borderRadius: 17, marginTop: 16, gap: 8 },
-  verdictTitle: { color: c.white, fontSize: 18, fontFamily: 'Inter_700Bold' },
+  safety: { marginTop: 10 },
+  note: { marginTop: 8, fontSize: 12 },
+  share: { marginTop: 20 },
 });
