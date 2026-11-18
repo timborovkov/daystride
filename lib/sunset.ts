@@ -2,11 +2,11 @@ import { getTimes } from 'suncalc';
 import lookup from 'tz-lookup';
 const timeZone = 'UTC';
 export const sample = {
-  name: 'My lake',
-  latitude: 52.6369,
-  longitude: -1.1398,
-  run: 40,
-  travel: 10,
+  name: 'Albert Village Lake',
+  latitude: 52.753702396115145,
+  longitude: -1.548138516658668,
+  run: 45,
+  travel: 15,
 };
 export type SolarMode = 'sunrise' | 'sunset';
 export type Profile = typeof sample;
