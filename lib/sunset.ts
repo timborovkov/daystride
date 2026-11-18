@@ -1,4 +1,6 @@
 import { getTimes } from 'suncalc';
+import lookup from 'tz-lookup';
+const timeZone = 'UTC';
 export const sample = {
   name: 'My lake',
   latitude: 52.6369,
@@ -7,28 +9,43 @@ export const sample = {
   travel: 10,
 };
 export type Profile = typeof sample;
-const timeZone = 'Europe/London';
-const clock = new Intl.DateTimeFormat('en-GB', {
-  timeZone,
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-});
+export const routeZone = (profile: Profile) => lookup(profile.latitude, profile.longitude);
+const clocks = new Map<string, Intl.DateTimeFormat>();
 const calendar = new Intl.DateTimeFormat('en-GB', {
   timeZone,
   weekday: 'short',
   day: 'numeric',
   month: 'short',
 });
-const iso = new Intl.DateTimeFormat('en-CA', {
-  timeZone,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});
-export const time = (ms: number) => (Number.isFinite(ms) ? clock.format(ms) : '—');
+const calendars = new Map<string, Intl.DateTimeFormat>();
+export function time(ms: number, profile: Profile) {
+  if (!Number.isFinite(ms)) return '—';
+  const zone = routeZone(profile);
+  let clock = clocks.get(zone);
+  if (!clock) {
+    clock = new Intl.DateTimeFormat('en-GB', {
+      timeZone: zone,
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    });
+    clocks.set(zone, clock);
+  }
+  return clock.format(ms);
+}
 export const dateLabel = (ms: number) => calendar.format(ms);
-export const dayKey = (date: Date) => {
+export const dayKey = (date: Date, profile: Profile) => {
+  const zone = routeZone(profile);
+  let iso = calendars.get(zone);
+  if (!iso) {
+    iso = new Intl.DateTimeFormat('en-CA', {
+      timeZone: zone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    calendars.set(zone, iso);
+  }
   const parts = iso.formatToParts(date);
   return ['year', 'month', 'day']
     .map((key) => parts.find((part) => part.type === key)?.value)
@@ -36,7 +53,7 @@ export const dayKey = (date: Date) => {
 };
 export const dayNoon = (key: string) => Date.parse(`${key}T12:00:00Z`);
 export function calculate(date: number, p: Profile) {
-  const sun = getTimes(new Date(date), p.latitude, p.longitude);
+  const sun = getTimes(new Date(date - p.longitude * 240000), p.latitude, p.longitude);
   const sunset = sun.sunset?.getTime() ?? NaN,
     golden = sun.goldenHour?.getTime() ?? NaN,
     last = sun.dusk?.getTime() ?? NaN;

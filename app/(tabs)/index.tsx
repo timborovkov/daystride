@@ -4,11 +4,11 @@ import { PressableFeedback } from 'heroui-native';
 import { ChevronRight, MapPin, Sunset } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
-import { calculate, dateLabel, dayKey, dayNoon, palette as c, time } from '@/lib/sunset';
+import { calculate, dateLabel, dayKey, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 export default function Week() {
   const { profile, runs, isSample, loading, now } = useRun();
   if (loading) return <RunLoading />;
-  const today = dayNoon(dayKey(new Date(now)));
+  const today = dayNoon(dayKey(new Date(now), profile));
   return (
     <RunPage>
       <View style={s.hero}>
@@ -32,7 +32,6 @@ export default function Week() {
       </View>
       <View style={s.heading}>
         <Title>This week</Title>
-        <Copy>UK local time</Copy>
       </View>
       {Array.from({ length: 7 }, (_, i) => {
         const date = today + i * 86400000;
@@ -57,7 +56,7 @@ export default function Week() {
             </View>
             {runs.map((run, index) => {
               const forecast = calculate(date, run);
-              const passed = i === 0 && now >= forecast.sunset;
+              const passed = date === dayNoon(dayKey(new Date(now), run)) && now >= forecast.sunset;
               return (
                 <View
                   key={index}
@@ -65,14 +64,15 @@ export default function Week() {
                   style={{ borderColor: c.line }}
                 >
                   {runs.length > 1 && <Text style={s.date}>{run.name}</Text>}
+                  <Copy>{routeZone(run).replaceAll('_', ' ')}</Copy>
                   <View style={s.times}>
                     <View style={s.cell}>
                       <Copy>Sunset</Copy>
-                      <Text style={s.time}>{time(forecast.sunset)}</Text>
+                      <Text style={s.time}>{time(forecast.sunset, run)}</Text>
                     </View>
                     <View style={s.cell}>
                       <Copy>Leave home by</Copy>
-                      <Text style={s.time}>{time(forecast.leave)}</Text>
+                      <Text style={s.time}>{time(forecast.leave, run)}</Text>
                     </View>
                   </View>
                   <Badge verdict={forecast.verdict} />

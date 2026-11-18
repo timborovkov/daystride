@@ -6,7 +6,7 @@ import type { Profile } from '@/lib/sunset';
 import { Footprints, House, Moon, Sun, Sunset, Flag } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
-import { calculate, dateLabel, dayNoon, palette as c, time } from '@/lib/sunset';
+import { calculate, dateLabel, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 export default function Day() {
   const { date } = useLocalSearchParams<{ date: string }>();
   const { runs, loading, isSample } = useRun();
@@ -43,7 +43,7 @@ export default function Day() {
         ListHeaderComponent={
           <View className="gap-3">
             <Title>{dateLabel(noon)}</Title>
-            <Copy>UK local time</Copy>
+
             {runs.length > 1 && (
               <TextField>
                 <Label>Filter by run name</Label>
@@ -97,6 +97,7 @@ function RunTimeline({
         {profile.name}
         {isSample ? ' · Sample' : ''}
       </Text>
+      <Copy>{routeZone(profile).replaceAll('_', ' ')}</Copy>
       <View style={s.timeline}>
         {events.map(({ label, at, Icon }, i) => (
           <View key={label} style={[s.event, label === 'Sunset' && s.sunset]}>
@@ -108,7 +109,7 @@ function RunTimeline({
               {i < events.length - 1 && <View style={s.after} />}
             </View>
             <Text style={s.label}>{label}</Text>
-            <Text style={s.time}>{time(at)}</Text>
+            <Text style={s.time}>{time(at, profile)}</Text>
           </View>
         ))}
       </View>
