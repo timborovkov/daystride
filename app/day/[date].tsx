@@ -3,7 +3,8 @@ import { setStringAsync } from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import { FlatList, KeyboardAvoidingView, Platform, Text, View, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Button, Input, Label, TextField } from 'heroui-native';
+import { Button } from 'heroui-native';
+import { RunFilter } from '@/components/RunFilter';
 import type { Profile } from '@/lib/sunset';
 import { Footprints, House, Moon, Sun, Sunset, Flag } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
@@ -11,8 +12,8 @@ import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 export default function Day() {
   const { date } = useLocalSearchParams<{ date: string }>();
-  const { runs, nearbyRuns, loading, isSample } = useRun();
-  const [query, setQuery] = useState('');
+  const { nearbyRuns, loading, isSample } = useRun();
+  const [selected, setSelected] = useState('');
   const noon = dayNoon(date);
   if (loading) return <RunLoading />;
   if (!Number.isFinite(noon))
@@ -24,7 +25,7 @@ export default function Day() {
     );
   const matches = nearbyRuns
     .map(({ run: profile, index }) => ({ profile, index }))
-    .filter(({ profile }) => profile.name.toLowerCase().includes(query.trim().toLowerCase()));
+    .filter(({ index }) => !selected || String(index) === selected);
   return (
     <KeyboardAvoidingView
       className="flex-1"
@@ -46,24 +47,14 @@ export default function Day() {
           <View className="gap-3">
             <Title>{dateLabel(noon)}</Title>
 
-            {runs.length > 1 && (
-              <TextField>
-                <Label>Filter by run name</Label>
-                <Input
-                  accessibilityLabel="Filter by run name"
-                  placeholder="All runs"
-                  value={query}
-                  onChangeText={setQuery}
-                />
-              </TextField>
-            )}
+            <RunFilter runs={nearbyRuns} selected={selected} onChange={setSelected} />
           </View>
         }
         ListEmptyComponent={
           <View className="items-start gap-3">
             <Footprints size={22} color={c.muted} />
-            <Copy>No runs match that name.</Copy>
-            <Button variant="secondary" onPress={() => setQuery('')}>
+            <Copy>No runs match this filter.</Copy>
+            <Button variant="secondary" onPress={() => setSelected('')}>
               Clear filter
             </Button>
           </View>

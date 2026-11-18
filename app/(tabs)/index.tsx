@@ -5,9 +5,17 @@ import { ChevronRight, Clock, MapPin, Sunset } from 'lucide-react-native';
 import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayKey, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
+import { useState } from 'react';
+import { RunFilter } from '@/components/RunFilter';
 export default function Week() {
+  const [selection, setSelection] = useState('');
   const { profile, runs, nearbyRuns, isSample, loading, now } = useRun();
   if (loading) return <RunLoading />;
+  const selected =
+    nearbyRuns.length > 1 && nearbyRuns.some(({ index }) => String(index) === selection)
+      ? selection
+      : '';
+  const visibleRuns = nearbyRuns.filter(({ index }) => !selected || String(index) === selected);
   const today = dayNoon(dayKey(new Date(now), profile));
   return (
     <RunPage>
@@ -33,6 +41,11 @@ export default function Week() {
       <View style={s.heading}>
         <Title>This week</Title>
       </View>
+      {nearbyRuns.length > 1 && (
+        <View className="mb-3">
+          <RunFilter runs={nearbyRuns} selected={selected} onChange={setSelection} />
+        </View>
+      )}
       {Array.from({ length: 7 }, (_, i) => {
         const date = today + i * 86400000;
         return (
@@ -54,13 +67,13 @@ export default function Week() {
               </Text>
               <ChevronRight size={16} color={c.muted} />
             </View>
-            {nearbyRuns.map(({ run, index }) => {
+            {visibleRuns.map(({ run, index }, position) => {
               const forecast = calculate(date, run);
               const passed = date === dayNoon(dayKey(new Date(now), run)) && now >= forecast.sunset;
               return (
                 <View
                   key={index}
-                  className={index > 0 ? 'mt-2 gap-3 border-t pt-4' : 'gap-3 pt-2'}
+                  className={position > 0 ? 'mt-2 gap-3 border-t pt-4' : 'gap-3 pt-2'}
                   style={{ borderColor: c.line }}
                 >
                   <View className="gap-1">
