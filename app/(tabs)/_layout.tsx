@@ -18,7 +18,7 @@ export default function TabLayout() {
           },
         })}
         screenOptions={{
-          headerStyle: { backgroundColor: c.paper },
+          headerStyle: { backgroundColor: c.paper, height: 100 },
           headerTintColor: c.ink,
           headerShadowVisible: false,
           sceneStyle: { backgroundColor: c.paper },
@@ -43,14 +43,14 @@ export default function TabLayout() {
                     source={{
                       uri: 'https://files.bilt.me/uploads/user_3Lxe2utqen0MTxRRmTsd2IMUyJB/fce2680a-11bc-4165-b23d-2fc8f83eb197.svg',
                     }}
-                    style={{ width: 100, height: 44 }}
+                    style={{ width: 200, height: 88 }}
                     resizeMode="contain"
                   />
                 ) : (
                   <SvgUri
                     uri={Image.resolveAssetSource(require('@/assets/dayride.svg'))?.uri ?? null}
-                    width={100}
-                    height={44}
+                    width={200}
+                    height={88}
                   />
                 )}
               </View>
@@ -74,14 +74,14 @@ export default function TabLayout() {
                     source={{
                       uri: 'https://files.bilt.me/uploads/user_3Lxe2utqen0MTxRRmTsd2IMUyJB/fce2680a-11bc-4165-b23d-2fc8f83eb197.svg',
                     }}
-                    style={{ width: 100, height: 44 }}
+                    style={{ width: 200, height: 88 }}
                     resizeMode="contain"
                   />
                 ) : (
                   <SvgUri
                     uri={Image.resolveAssetSource(require('@/assets/dayride.svg'))?.uri ?? null}
-                    width={100}
-                    height={44}
+                    width={200}
+                    height={88}
                   />
                 )}
               </View>
