@@ -21,7 +21,7 @@ const region = (point: LatLng) => ({
   longitudeDelta: 0.05,
 });
 export default function MyRuns() {
-  const { runs, loading, isSample } = useRun();
+  const { runs, nearbyRuns, loading, isSample } = useRun();
   const [editing, setEditing] = useState<number | 'new' | null>(null);
   if (loading) return <RunLoading />;
   if (editing !== null)
@@ -36,15 +36,15 @@ export default function MyRuns() {
     <FlatList
       className="flex-1"
       contentContainerStyle={{ padding: 20, gap: 12 }}
-      data={runs}
-      keyExtractor={(_, i) => String(i)}
+      data={nearbyRuns}
+      keyExtractor={({ index }) => String(index)}
       ListHeaderComponent={
         <View className="gap-4 pb-2">
           <Title>My runs</Title>
           <Button onPress={() => setEditing('new')}>Add run</Button>
         </View>
       }
-      renderItem={({ item, index }) => (
+      renderItem={({ item: { run: item, index } }) => (
         <Button variant="secondary" onPress={() => setEditing(index)}>
           <Button.Label numberOfLines={1}>
             {isSample ? `${item.name} · Sample` : item.name}

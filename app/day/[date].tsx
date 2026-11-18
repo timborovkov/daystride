@@ -11,7 +11,7 @@ import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 export default function Day() {
   const { date } = useLocalSearchParams<{ date: string }>();
-  const { runs, loading, isSample } = useRun();
+  const { runs, nearbyRuns, loading, isSample } = useRun();
   const [query, setQuery] = useState('');
   const noon = dayNoon(date);
   if (loading) return <RunLoading />;
@@ -22,8 +22,8 @@ export default function Day() {
         <Button onPress={() => router.replace('/')}>Back to this week</Button>
       </RunPage>
     );
-  const matches = runs
-    .map((profile, index) => ({ profile, index }))
+  const matches = nearbyRuns
+    .map(({ run: profile, index }) => ({ profile, index }))
     .filter(({ profile }) => profile.name.toLowerCase().includes(query.trim().toLowerCase()));
   return (
     <KeyboardAvoidingView

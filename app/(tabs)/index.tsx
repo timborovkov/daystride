@@ -6,7 +6,7 @@ import { Badge, Copy, RunLoading, RunPage, Title } from '@/components/RunUI';
 import { useRun } from '@/lib/run-profile';
 import { calculate, dateLabel, dayKey, dayNoon, palette as c, routeZone, time } from '@/lib/sunset';
 export default function Week() {
-  const { profile, runs, isSample, loading, now } = useRun();
+  const { profile, runs, nearbyRuns, isSample, loading, now } = useRun();
   if (loading) return <RunLoading />;
   const today = dayNoon(dayKey(new Date(now), profile));
   return (
@@ -54,7 +54,7 @@ export default function Week() {
               </Text>
               <ChevronRight size={16} color={c.muted} />
             </View>
-            {runs.map((run, index) => {
+            {nearbyRuns.map(({ run, index }) => {
               const forecast = calculate(date, run);
               const passed = date === dayNoon(dayKey(new Date(now), run)) && now >= forecast.sunset;
               return (
